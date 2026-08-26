@@ -618,7 +618,6 @@ document.addEventListener("DOMContentLoaded", () => {
   setInterval(refreshWeather, WEATHER_REFRESH_MS);
   renderSlots();
   document.querySelectorAll("[data-media]").forEach(button => button.addEventListener("click", () => runCommand(button.dataset.media, "Команда плеера", button)));
-  document.getElementById("settings-button").addEventListener("click", () => bridge.call("onSettings", TOKEN));
   document.getElementById("wallpaper-button").addEventListener("click", () => setHeroWallpaper(true));
   document.getElementById("weather-widget").addEventListener("click", () => refreshWeather(true));
   document.getElementById("picker-close").addEventListener("click", closePicker);
