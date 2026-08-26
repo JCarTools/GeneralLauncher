@@ -641,13 +641,28 @@ function updateClock() {
 function applyAndSaveWallpaper(value) {
   document.body.style.backgroundImage = `url("${value}")`;
   try {
-    localStorage.removeItem("generic_launcher_wallpaper");
-    localStorage.removeItem("generic_launcher_wallpaper_at");
     localStorage.setItem("wallpaperMode", JSON.stringify("auto"));
     localStorage.setItem("wallpaperImage", JSON.stringify(value));
+    localStorage.removeItem("generic_launcher_wallpaper");
+    localStorage.removeItem("generic_launcher_wallpaper_at");
   } catch (storageError) {
     console.warn("Фон применён, но не сохранён", storageError);
   }
+}
+
+async function downloadWallpaper(url) {
+  const response = await fetch(url, { cache: "no-store" });
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  const blob = await response.blob();
+  const type = response.headers.get("content-type") || blob.type || "";
+  if (!type.startsWith("image")) throw new Error("Ответ не является изображением");
+  if (blob.size < 10_000) throw new Error("Изображение слишком маленькое");
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
 }
 
 function preloadWallpaper(url) {
@@ -667,25 +682,13 @@ async function setHeroWallpaper(force = false) {
 
   const cached = legacyCache || currentCache;
   if (cached) document.body.style.backgroundImage = `url("${cached}")`;
-  if (!force && cached) return;
 
   const width = Math.max(1, window.innerWidth);
   const height = Math.max(1, window.innerHeight);
   const proxyUrl = `https://jcartools.ru/run/picsum_proxy.php?${width}/${height}`;
   let lastError = null;
   try {
-    const response = await fetch(proxyUrl, { cache: "no-store" });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const type = response.headers.get("content-type") || "";
-    if (!type.startsWith("image")) throw new Error("Ответ не является изображением");
-    const blob = await response.blob();
-    if (blob.size < 10_000) throw new Error("Изображение слишком маленькое");
-    const dataUrl = await new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result);
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
+    const dataUrl = await downloadWallpaper(proxyUrl);
     applyAndSaveWallpaper(dataUrl);
     if (force) showToast("Изображение обновлено");
     return;
@@ -696,13 +699,22 @@ async function setHeroWallpaper(force = false) {
 
   const directUrl = `https://picsum.photos/${width}/${height}?r=${Date.now()}`;
   try {
-    await preloadWallpaper(directUrl);
-    applyAndSaveWallpaper(directUrl);
+    const dataUrl = await downloadWallpaper(directUrl);
+    applyAndSaveWallpaper(dataUrl);
     if (force) showToast("Изображение обновлено");
     return;
   } catch (error) {
     lastError = error;
     console.warn("Резервный источник недоступен", directUrl, error);
+  }
+
+  try {
+    await preloadWallpaper(directUrl);
+    document.body.style.backgroundImage = `url("${directUrl}")`;
+    if (force) showToast("Изображение обновлено без локального сохранения");
+    return;
+  } catch (error) {
+    lastError = error;
   }
 
   if (cached) {
