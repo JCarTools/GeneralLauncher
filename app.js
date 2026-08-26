@@ -2,6 +2,7 @@ const TOKEN = "SECURE_TOKEN_2025";
 const SLOT_COUNT = 12;
 const STORAGE_KEY = "generic_launcher_slots_v1";
 const WEATHER_STORAGE_KEY = "generic_launcher_weather_v1";
+const TRAY_OPEN_STORAGE_KEY = "generic_launcher_tray_open_v1";
 const WEATHER_REFRESH_MS = 30 * 60 * 1000;
 
 const FALLBACK_ACTIONS = [
@@ -87,6 +88,23 @@ const state = {
   query: "",
   toastTimer: null
 };
+
+function loadTrayOpen() {
+  try { return localStorage.getItem(TRAY_OPEN_STORAGE_KEY) === "true"; }
+  catch { return false; }
+}
+
+function setTrayOpen(open, persist = true) {
+  const section = document.querySelector(".actions-section");
+  const toggle = document.getElementById("tray-toggle");
+  const label = document.getElementById("tray-toggle-label");
+  section.classList.toggle("collapsed", !open);
+  toggle.setAttribute("aria-expanded", String(open));
+  label.textContent = open ? "Свернуть лоток" : "Развернуть лоток";
+  if (persist) {
+    try { localStorage.setItem(TRAY_OPEN_STORAGE_KEY, String(open)); } catch { }
+  }
+}
 
 const bridge = {
   available() { return !!(window.androidApi && typeof window.androidApi === "object"); },
@@ -617,6 +635,11 @@ document.addEventListener("DOMContentLoaded", () => {
   applyWeather(bridge.getWeather());
   setInterval(refreshWeather, WEATHER_REFRESH_MS);
   renderSlots();
+  setTrayOpen(loadTrayOpen(), false);
+  document.getElementById("tray-toggle").addEventListener("click", () => {
+    const expanded = document.getElementById("tray-toggle").getAttribute("aria-expanded") === "true";
+    setTrayOpen(!expanded);
+  });
   document.querySelectorAll("[data-media]").forEach(button => button.addEventListener("click", () => runCommand(button.dataset.media, "Команда плеера", button)));
   document.getElementById("wallpaper-button").addEventListener("click", () => setHeroWallpaper(true));
   document.getElementById("weather-widget").addEventListener("click", () => refreshWeather(true));

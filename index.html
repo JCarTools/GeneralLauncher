@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#0a0a0c">
   <title>Generic Launcher</title>
-  <link rel="stylesheet" href="styles.css?v=1.0.0">
+  <link rel="stylesheet" href="styles.css?v=1.1.0">
 </head>
 <body>
   <main class="dashboard" aria-label="Generic Launcher">
@@ -48,15 +48,21 @@
       </div>
     </section>
 
-    <section class="actions-section" aria-labelledby="actions-title">
-      <header class="actions-header">
+    <section class="actions-section collapsed" aria-labelledby="actions-title">
+      <button type="button" class="tray-toggle" id="tray-toggle" aria-expanded="false" aria-controls="tray-content">
         <div>
           <div class="eyebrow">БЫСТРЫЙ ДОСТУП</div>
-          <h1 id="actions-title">Действия</h1>
+          <strong id="actions-title">Действия и приложения</strong>
         </div>
-        <p>Нажмите для запуска · удерживайте, чтобы изменить</p>
-      </header>
-      <div class="action-slots" id="action-slots" aria-live="polite"></div>
+        <span class="tray-toggle-side">
+          <span id="tray-toggle-label">Развернуть лоток</span>
+          <span class="tray-chevron" aria-hidden="true">⌃</span>
+        </span>
+      </button>
+      <div class="tray-content" id="tray-content">
+        <p class="tray-hint">Нажмите для запуска · удерживайте, чтобы изменить</p>
+        <div class="action-slots" id="action-slots" aria-live="polite"></div>
+      </div>
     </section>
   </main>
 
@@ -84,6 +90,6 @@
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="app.js?v=1.0.0"></script>
+  <script src="app.js?v=1.1.0"></script>
 </body>
 </html>
