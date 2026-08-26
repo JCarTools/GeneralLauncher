@@ -795,6 +795,14 @@ window.onAndroidEvent = function onAndroidEvent(type, data) {
   }
 };
 
+window.JctInsets = function (left, top, right, bottom) {
+  const root = document.documentElement.style;
+  root.setProperty("--safe-left", `${Math.max(0, Number(left) || 0)}px`);
+  root.setProperty("--safe-top", `${Math.max(0, Number(top) || 0)}px`);
+  root.setProperty("--safe-right", `${Math.max(0, Number(right) || 0)}px`);
+  root.setProperty("--safe-bottom", `${Math.max(0, Number(bottom) || 0)}px`);
+};
+
 function showToast(message) {
   const toast = document.getElementById("toast");
   toast.textContent = message;
